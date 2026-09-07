@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tuis Webhook V2</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111827;
+      color: white;
+      padding: 30px;
+      max-width: 700px;
+      margin: auto;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .slot {
+      background: #1f2937;
+      padding: 20px;
+      margin: 15px 0;
+      border-radius: 12px;
+    }
+
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      margin: 8px 0 15px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      margin-right: 8px;
+    }
+
+    .press {
+      background: #22c55e;
+      color: white;
+    }
+
+    .add {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .stop {
+      background: #ef4444;
+      color: white;
+    }
+
+    .remove {
+      background: #6b7280;
+      color: white;
+    }
+
+    button:hover {
+      opacity: 0.85;
+    }
+
+    .counter {
+      margin-top: 10px;
+      color: #9ca3af;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Tuis Webhook V2</h1>
+
+  <button class="add" onclick="addSlot()">+ Add Slot</button>
+  <button class="stop" onclick="stopSpeaking()">⏹ Stop</button>
+
+  <div id="slots"></div>
+
+  <script>
+    let slotNumber = 0;
+
+    function addSlot() {
+      slotNumber++;
+
+      const slot = document.createElement("div");
+      slot.className = "slot";
+
+      slot.innerHTML = `
+        <h3>Slot ${slotNumber}</h3>
+
+        <input
+          type="text"
+          class="message"
+          placeholder="Type what you want it to say..."
+        >
+
+        <button class="press" onclick="say30(this)">
+          🔊 PRESS
+        </button>
+
+        <button class="remove" onclick="removeSlot(this)">
+          🗑 Remove
+        </button>
+
+        <div class="counter">Ready</div>
+      `;
+
+      document.getElementById("slots").appendChild(slot);
+    }
+
+    function say30(button) {
+      const slot = button.parentElement;
+      const message = slot.querySelector(".message").value.trim();
+      const counter = slot.querySelector(".counter");
+
+      if (!message) {
+        alert("Type something first!");
+        return;
+      }
+
+      speechSynthesis.cancel();
+
+      let count = 0;
+
+      function sayNext() {
+        if (count >= 30) {
+          counter.textContent = "✅ Finished!";
+          return;
+        }
+
+        count++;
+        counter.textContent = "Saying: " + count + " / 30";
+
+        const speech = new SpeechSynthesisUtterance(message);
+
+        speech.onend = function () {
+          sayNext();
+        };
+
+        speech.onerror = function () {
+          counter.textContent = "❌ Speech error";
+        };
+
+        speechSynthesis.speak(speech);
+      }
+
+      sayNext();
+    }
+
+    function stopSpeaking() {
+      speechSynthesis.cancel();
+
+      document.querySelectorAll(".counter").forEach(counter => {
+        counter.textContent = "⏹ Stopped";
+      });
+    }
+
+    function removeSlot(button) {
+      button.parentElement.remove();
+    }
+
+    addSlot();
+  </script>
+
+</body>
+</html>
