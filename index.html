@@ -11,12 +11,18 @@
       background: #111827;
       color: white;
       padding: 30px;
-      max-width: 700px;
+      max-width: 750px;
       margin: auto;
     }
 
     h1 {
       text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .top-buttons {
+      text-align: center;
+      margin-bottom: 20px;
     }
 
     .slot {
@@ -26,33 +32,55 @@
       border-radius: 12px;
     }
 
+    .slot h3 {
+      margin-top: 0;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      margin-bottom: 5px;
+      color: #d1d5db;
+      font-weight: bold;
+    }
+
     input {
       width: 100%;
       box-sizing: border-box;
       padding: 12px;
-      margin: 8px 0 15px;
+      margin-bottom: 12px;
       border: none;
       border-radius: 8px;
       font-size: 16px;
+      background: #374151;
+      color: white;
+    }
+
+    input::placeholder {
+      color: #9ca3af;
     }
 
     button {
-      padding: 12px 20px;
+      padding: 12px 18px;
       border: none;
       border-radius: 8px;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: bold;
-      margin-right: 8px;
+      margin: 5px 5px 5px 0;
     }
 
-    .press {
-      background: #22c55e;
-      color: white;
+    button:hover {
+      opacity: 0.85;
     }
 
     .add {
       background: #3b82f6;
+      color: white;
+    }
+
+    .press {
+      background: #22c55e;
       color: white;
     }
 
@@ -66,10 +94,6 @@
       color: white;
     }
 
-    button:hover {
-      opacity: 0.85;
-    }
-
     .counter {
       margin-top: 10px;
       color: #9ca3af;
@@ -81,14 +105,17 @@
 
   <h1>Tuis Webhook V2</h1>
 
-  <button class="add" onclick="addSlot()">+ Add Slot</button>
-  <button class="stop" onclick="stopSpeaking()">⏹ Stop</button>
+  <div class="top-buttons">
+    <button class="add" onclick="addSlot()">＋ Add Webhook Slot</button>
+    <button class="stop" onclick="stopSpeaking()">⏹ Stop</button>
+  </div>
 
   <div id="slots"></div>
 
   <script>
     let slotNumber = 0;
 
+    // Add a new webhook slot
     function addSlot() {
       slotNumber++;
 
@@ -96,15 +123,23 @@
       slot.className = "slot";
 
       slot.innerHTML = `
-        <h3>Slot ${slotNumber}</h3>
+        <h3>Webhook Slot ${slotNumber}</h3>
 
+        <label>Webhook URL</label>
+        <input
+          type="url"
+          class="webhook"
+          placeholder="Paste your webhook URL here..."
+        >
+
+        <label>What should it say?</label>
         <input
           type="text"
           class="message"
           placeholder="Type what you want it to say..."
         >
 
-        <button class="press" onclick="say30(this)">
+        <button class="press" onclick="pressWebhook(this)">
           🔊 PRESS
         </button>
 
@@ -118,28 +153,37 @@
       document.getElementById("slots").appendChild(slot);
     }
 
-    function say30(button) {
+    // Press button
+    function pressWebhook(button) {
       const slot = button.parentElement;
+
+      const webhook = slot.querySelector(".webhook").value.trim();
       const message = slot.querySelector(".message").value.trim();
       const counter = slot.querySelector(".counter");
 
-      if (!message) {
-        alert("Type something first!");
+      if (!webhook) {
+        alert("Please enter a webhook URL!");
         return;
       }
 
+      if (!message) {
+        alert("Please type something to say!");
+        return;
+      }
+
+      // Stop any current speech
       speechSynthesis.cancel();
 
       let count = 0;
 
       function sayNext() {
         if (count >= 30) {
-          counter.textContent = "✅ Finished!";
+          counter.textContent = "✅ Finished 30 times!";
           return;
         }
 
         count++;
-        counter.textContent = "Saying: " + count + " / 30";
+        counter.textContent = "🔊 Saying " + count + " / 30";
 
         const speech = new SpeechSynthesisUtterance(message);
 
@@ -157,6 +201,7 @@
       sayNext();
     }
 
+    // Stop speaking
     function stopSpeaking() {
       speechSynthesis.cancel();
 
@@ -165,10 +210,12 @@
       });
     }
 
+    // Remove slot
     function removeSlot(button) {
       button.parentElement.remove();
     }
 
+    // Add first slot automatically
     addSlot();
   </script>
 
